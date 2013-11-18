@@ -1,0 +1,46 @@
+Makrobe
+========
+
+Medlemsregister med betalingsoversikt
+-------------------------------------
+
+Makrobe automatiserer innmeldingen av medlemmer
+som skal betale periodisk medlemsavgift.
+
+Dette gjør makrobe ved å registrere innbetalinger
+fra bankmeldinger mottatt på mail inn i en database.
+
+Databasen administreres ved hjelp av et web-grensesnitt
+som tillater å endre og fjerne medlemmer samt se på og
+endre transaksjoner registrert for medlemmet.
+
+Bruk
+----
+
+couchimport.pl      importerer databasen fra et regneark via csv
+imap.py             laster ned bbs filene
+cultura.pl          registrerer innbetalinger fra bbs filene
+process_payments.sh behandler alle pdf'er
+
+web/:               static web files (js, css etc)
+makrobe.lua         web backend
+
+Dependencies:
+-------------
+mail:
+Python IMAPClient
+
+import/registrering:
+pdftotext
+JSON::XS
+
+web:
+lua orbit
+luchia
+
+
+Uferdig funksjonalitet som er på plana:
+ - innmeldingsskjema
+ - sende purremeldinger
+ - sende velkomstmelding
+ - sende rapporter

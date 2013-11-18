@@ -1,0 +1,2 @@
+# m h  dom mon dow   command
+23 20  *  *  0-5 ~/makrobe/process_payments.sh
