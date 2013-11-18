@@ -1,6 +1,6 @@
 #!/bin/sh
 #set -x
-cd ~/plankapp/
+cd ~/makrobe/
 
 rm -f todo_list
 # fetch payments
