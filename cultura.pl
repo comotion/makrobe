@@ -76,7 +76,7 @@ use constant {
 # to parse these lines
 my $datefmt = '(\d\d\/\d\d-\d\d\d\d)';
 my $acctfmt = '(\d{4}\.\d{2}\.\d{5})';
-my $amntfmt = '(\d+,\d{2})';
+my $amntfmt = '([0-9\.]+,\d{2})';
 my $blnkfmt = '(\d+)';
 my $areffmt = '([\d*]+)';
 my $idnrfmt = '(\d+)';
