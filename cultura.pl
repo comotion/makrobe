@@ -12,7 +12,6 @@ use POSIX qw(strftime);
 #use encoding 'utf-8';#, Filter=> 1;
 use utf8;
 use JSON::XS;
-use CouchDB;
 use Date::Parse;
 use Encode;
 
@@ -24,6 +23,10 @@ my $json = JSON::XS->new->ascii->utf8;
 our $REAL = 0;
 our $VERBOSE = 0;
 
+
+if ($REAL){
+use CouchDB;
+}
 my $db = CouchDB->new('localhost', 5984) if $REAL;
 
 our $CSV = 1; 
