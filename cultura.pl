@@ -218,18 +218,9 @@ sub date_me {
 	   Members::put($db, "/$org/", $his) if $REAL;
 	}
 
-	sub proper_amount {
-	   my ($amount) = @_;
-	   my (@comp) = split /\./,$amount;
-	   my $frac = pop @comp;
-	   my $n = join('.', join('', @comp), $frac);
-	print "Num is $n\n";
-	   return $n + 0;
-	}
 	sub parse_amount {
 	   my $amount = shift;
 	   $amount =~ s/\.(\d\d\d)/$1/g;
-	   print "MYE: $amount\n";
 	   return $amount + 0;
 	}
 
