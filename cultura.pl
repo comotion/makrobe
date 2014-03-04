@@ -16,12 +16,18 @@ use CouchDB;
 use Date::Parse;
 use Encode;
 
-use Common;
+use Members;
 
+my $org = "org";
 my $json = JSON::XS->new->ascii->utf8;
-my $db = CouchDB->new('localhost', 5984);
 
-our $REAL = 1;
+our $REAL = 0;
+our $VERBOSE = 0;
+
+my $db = CouchDB->new('localhost', 5984) if $REAL;
+
+our $CSV = 1; 
+print "date, amount, blankett, ref, id, name, addr, post, account, melding\n" if $CSV;
 
 =stuff
 MELDING OM KREDITERING
@@ -128,11 +134,11 @@ sub register_payment {
 
 
    # lookup the account
-   my $that = Members::lookup ($org, $db, 'account', $fra);
+   my $that = Members::lookup ($org, $db, 'account', $fra) if $REAL;
 
    #no account, ok, so maybe by name?
    if(not $that){
-      $that = Members::lookup($org, $db, 'name', lc $name);
+      $that = Members::lookup($org, $db, 'name', lc $name) if $REAL;
       if($that){
          $by_name = 1;
          #print "Score boyyo $that->{name}\n";
@@ -148,7 +154,7 @@ sub register_payment {
    $that->{name}  =~ s/\.//g; # punctuations
    $name = lc $name;
 
-   if(Members::match_name($name, $that->{name})){
+   if(not $REAL or Members::match_name($name, $that->{name})){
       #print "$that->{name} matches\n";
       if($by_name) {
          print "Update $that->{name} with account $fra\n";
@@ -203,14 +209,15 @@ sub pay_him {
       konto =>  $account,
       melding => $melding};
    $his->{transactions} = $tx;
-   print "tx: $his->{name} $his->{transactions}[0]{name} $mye\n";
+   print "tx: $his->{name} $his->{transactions}[0]{name} $mye\n" if $VERBOSE;
+   print "$val_from, $mye, $blankett, $aref, $id, $name, $addr, $post, $account, $melding\n" if $CSV;
 
    Members::put($db, "/$org/", $his) if $REAL;
 }
 
 # register a new account
 sub register_new {
-   print "New @_\n";
+   print "New @_\n" if $VERBOSE;
    my ($date, $fra, $mye, $blankett, $aref, $id,$name, $addr, $post, $melding) = @_;
    my ($da,$ma,$ya) = date_me($date);
    my $joined = proper_date($da,$ma,$ya);
@@ -270,7 +277,7 @@ sub parse_payment_line {
    /^Blankettnr. : (.*)$/ and $1 =~ $blnkfmt and $blankett = $1 or
    /^Arkivref. : (.*)$/ and $1 =~ $areffmt and $aref = $1 or
    /^ID nummer : (.*)$/ and $1 =~ $idnrfmt and $id = $1 or
-   /^MELDING OM KREDITERING/ and
+   /^MELDING OM KREDITERING/ and $oppgj and
       new_credit($oppgj, $oppdr, $til, $fra, $mye, $blankett, $aref, $id, $nameaddr, $melding) or
    /^BETALER:$/ and $state = GETNAME or
    /^MOTTAKER:$/ and $state = HASNAME or
@@ -278,6 +285,10 @@ sub parse_payment_line {
    $state == GETNAME and $nameaddr .= $_ . ':;' or
    $state == GETMSG and $melding .= $_ or 1;
 }
+sub parse_last_line() {
+      $oppgj and new_credit($oppgj, $oppdr, $til, $fra, $mye, $blankett, $aref, $id, $nameaddr, $melding);
+}
+   
 
 
 # For older (squeeze) poppler-utils
@@ -307,4 +318,5 @@ sub parse_payment_line_squeeze {
 while (<>) {
    parse_payment_line();
 }
+parse_last_line();
 
