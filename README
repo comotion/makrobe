@@ -31,8 +31,8 @@ mail:
 Python IMAPClient
 
 import/registrering:
-pdftotext
-JSON::XS
+pdftotext (For ubuntu: apt:poppler-utils )
+JSON::XS (For ubuntu: apt:libjson-xs-perl )
 
 web:
 lua orbit
