@@ -1,7 +1,7 @@
-	#!/usr/bin/env perl
-	# les en cultura/bbs pdf og registrer
-	#
-	# comotion@krutt.org 2012-12-12
+#!/usr/bin/env perl
+# les en cultura/bbs pdf og registrer
+#
+# comotion@krutt.org 2012-12-12
 
 use warnings;
 use strict;
@@ -9,7 +9,7 @@ use strict;
 binmode STDIN, ":utf8";
 binmode STDOUT, ":utf8";
 use POSIX qw(strftime);
-	#use encoding 'utf-8';#, Filter=> 1;
+#use encoding 'utf-8';#, Filter=> 1;
 use utf8;
 use JSON::XS;
 use Date::Parse;
@@ -21,7 +21,7 @@ my $org = "org";
 my $json = JSON::XS->new->ascii->utf8;
 
 our $REAL = 0;
-our $VERBOSE = 0;
+our $VERBOSE = 1;
 
 
 if ($REAL){
@@ -73,7 +73,7 @@ use constant {
           GETMSG => 3
 };
 
-	# to parse these lines
+    # to parse these lines
 my $datefmt = '(\d\d\/\d\d-\d\d\d\d)';
 my $acctfmt = '(\d{4}\.\d{2}\.\d{5})';
 my $amntfmt = '([0-9\.]+,\d{2})';
@@ -85,7 +85,7 @@ my $nameaddr = '';
 my $melding = '';
 my $state = RESET;
 
-	# make sure all the facts are strait.
+# make sure all the facts are strait.
 sub check_payment {
     die "not enough ".scalar @_ if scalar @_ != 10;
     my ($oppgj, $oppdr, $til, $fra, $mye, $blankett, $aref, $id,$nameaddr, $melding) = @_;
@@ -113,7 +113,7 @@ sub inc_month{
     return ($da, $ma, $ya);
 }
 
-	# store payment in db
+# store payment in db
 sub register_payment {
     die "bogous transaction, format correct?" if not check_payment(@_);
     my ($oppgj, $oppdr, $til, $fra, $mye, $blankett, $aref, $id,$nameaddr, $melding) = @_;
@@ -127,38 +127,38 @@ sub register_payment {
     my $post = pop @adr;
     my $addr = join @adr;
 
-	# count payment from oppdragsdato
+    # count payment from oppdragsdato
     my ($da, $ma, $ya) = date_me($oppdr);
     my $date = proper_date($da,$ma,$ya);
     my $val_to = proper_date($da,$ma+1, $ya);
-	#print "$name sier:$melding\n";
+    #print "$name sier:$melding\n";
     $fra =~ s/\.//g;
     my $by_name = 0;
 
 
-	# lookup the account
+    # lookup the account
     my $that = Members::lookup ($org, $db, 'account', $fra) if $REAL;
 
-	#no account, ok, so maybe by name?
+    #no account, ok, so maybe by name?
     if(not $that){
         $that = Members::lookup($org, $db, 'name', lc $name) if $REAL;
         if($that){
             $by_name = 1;
-	#print "Score boyyo $that->{name}\n";
+            #print "Score boyyo $that->{name}\n";
         }
     }
     if(not $that) {
-	# neither account # nor name is known, make new
+        # neither account # nor name is known, make new
         return register_new($oppdr, $fra, $mye, $blankett, $aref, $id,$name, $addr, $post, $melding)
     }
 
-	#print $json->encode($that);
-	#print lc decode('utf8',$that->{name})."\n";
+    #print $json->encode($that);
+    #print lc decode('utf8',$that->{name})."\n";
     $that->{name}  =~ s/\.//g; # punctuations
         $name = lc $name;
 
     if(not $REAL or Members::match_name($name, $that->{name})){
-	#print "$that->{name} matches\n";
+    #print "$that->{name} matches\n";
         if($by_name) {
             print "Update $that->{name} with account $fra\n";
             put_account($db, $that, $fra);
@@ -169,16 +169,16 @@ sub register_payment {
         warn "$name, $addr, $post doesnt match $that->{name} associated with account $that->{account}!\n";
     }
 
-	# store transaction
-	#$that->{xact}
-	## put $th->{transactions}->{id}(when,howmuch)
+    # store transaction
+    #$that->{xact}
+    ## put $th->{transactions}->{id}(when,howmuch)
     return $nameaddr;
 }
 
 sub put_account {
     my ($db, $that, $account) = @_;
     $that->{account} = Common::merge_accounts($account, $that->{account});
-	#print "put $that->{_id} :: $that->{account}")."\n";
+    #print "put $that->{_id} :: $that->{account}")."\n";
     $db->put("/$org/".$that->{_id}, $json->encode($that)) if $REAL;
 }
 
@@ -194,9 +194,9 @@ sub pay_him {
     my $val_to = proper_date(inc_month($da,$ma,$ya));
     $his->{valid_from} = $val_from;
     $his->{valid_to} = $val_to;
-	#check if txid is already there!
+    #check if txid is already there!
     if(grep { $_->{blankett} eq $blankett and $_->{arkivref} eq $aref } @{$tx}){
-    	#warn "tx $aref already registered\n";
+        #warn "tx $aref already registered\n";
         return;
     }
 
@@ -224,7 +224,7 @@ sub parse_amount {
     return $amount + 0;
 }
 
-	# register a new account
+    # register a new account
 sub register_new {
     print "New @_\n" if $VERBOSE;
     my ($date, $fra, $mye, $blankett, $aref, $id,$name, $addr, $post, $melding) = @_;
@@ -244,13 +244,13 @@ sub register_new {
     }elsif($mye == 250){
         $h{paid_250} = 1;
     }
-	# create the entry by "paying it"
+    # create the entry by "paying it"
     return pay_him($db, \%h, $fra, $date, $mye, $blankett, $aref, $id, $name, $addr, $post, $melding);
 }
 
 sub send_ackmail {
     my ($mailto, $stuff) = @_;
-	#print "sure, $mailto\n";
+    #print "sure, $mailto\n";
 }
 
 sub new_credit {
@@ -272,7 +272,7 @@ sub reset_credit {
 
 
 sub parse_payment_line {
-	#print and 
+    #print and 
     chomp;
     /^Side \d+ av \d+$/ and 1 or
         /^forts. / and 1 or
@@ -305,10 +305,10 @@ sub parse_last_line() {
 sub parse_payment_line_squeeze {
     if (/^$datefmt $datefmt $acctfmt $acctfmt $amntfmt $blnkfmt $areffmt $idnrfmt/) {
         my ($oppgj, $oppdr, $til, $fra, $mye, $blankett, $aref, $id) = ($1, $2, $3, $4, $5, $6, $7, $8);
-    	# check all the facts
-    	# register in db
+        # check all the facts
+        # register in db
         my $got = register_payment($oppgj,$oppdr,$til,$fra,$mye,$blankett,$aref,$id,$nameaddr,$melding);
-	    # send mail on it
+        # send mail on it
         send_ackmail($got);
         $nameaddr = $melding = '';
         $state = RESET;
