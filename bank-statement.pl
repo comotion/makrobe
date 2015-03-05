@@ -34,9 +34,16 @@ my %years;
 my %groupsy;
 my %groupsm;
 
+sub parse_amount {
+   my $amount = shift;
+   $amount =~ s/,00//;
+   $amount =~ s/,/\./;
+   return $amount + 0;
+}
+
 for my $list (@nodes) {
 	my $date  = trim($list->findvalue('td[position()=1]'));
-	my $group = substr(trim($list->findvalue('td[position()=3]')), 0, 19);
+	my $group = trim($list->findvalue('td[position()=3]'));
 	my $in    = trim($list->findvalue('td[position()=4]'));
 	my $out   = trim($list->findvalue('td[position()=5]'));
 	my $val   = ($in ? $in : "-" . $out);
@@ -67,9 +74,9 @@ foreach $key (sort (keys(%years))) {
 	print "$key\r\n";
 	foreach $g (sort (keys($years{$key}))) {
 		printf "\t%-20s\t%-10s\t%s\r\n",
-			substr($g, 0, 19),
-			(reduce { $a + $b } @{$years{$key}{$g}}),
-			join(',', map { sprintf("%10s", $_) } @{$years{$key}{$g}});
+			$g,
+			parse_amount(reduce { parse_amount($a) + parse_amount($b) } @{$years{$key}{$g}}),
+			join(';', map { sprintf("%10s", $_) } @{$years{$key}{$g}});
 
 	}
 }
@@ -81,8 +88,8 @@ foreach $key (sort (keys(%months))) {
 	print "$key\r\n";
 	foreach $g (sort (keys($months{$key}))) {
 		printf "\t%-20s\t%-10s\t%s\r\n",
-			substr($g, 0, 19),
-			(reduce { $a + $b } @{$months{$key}{$g}}),
-			join(',', map { sprintf("%10s", $_) } @{$months{$key}{$g}});
+			$g,
+			parse_amount(reduce { parse_amount($a) + parse_amount($b) } @{$months{$key}{$g}}),
+			join(';', map { sprintf("%10s", $_) } @{$months{$key}{$g}});
 	}
 }
